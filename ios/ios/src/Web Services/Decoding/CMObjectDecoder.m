@@ -6,265 +6,229 @@
 //  See LICENSE file included with SDK for details.
 //
 
-#import "CMObjectDecoder.h"
-#import "CMUntypedObject.h"
-#import "CMSerializable.h"
 #import "CMObjectSerialization.h"
-#import "CMGeoPoint.h"
-#import "CMACL.h"
-#import "CMDate.h"
-#import "CMObjectClassNameRegistry.h"
 
-@interface CMObjectDecoder (Private)
-+ (Class)typeFromDictionaryRepresentation:(NSDictionary *)representation;
-- (NSArray *)decodeAllInList:(NSArray *)list;
-- (NSDictionary *)decodeAllInDictionary:(NSDictionary *)dictionary;
-- (id)deserializeContentsOfObject:(id)objv;
+#import "CMObjectEncoder.h"
+#import "CMObjectDecoder.h"
+
+#import "CMGeoPoint.h"
+#import "CMObjectReference.h"
+
+#import "CMUser.h"
+#import "CMFile.h"
+#import "CMACL.h"
+
+#import <objc/runtime.h>
+
+@interface CMObjectDecoder () {
+    NSDictionary *_representation;
+}
 @end
+
+static NSDictionary *_classMapping;
+static NSDictionary *_typeMapping;
 
 @implementation CMObjectDecoder
 
-#pragma mark - Kickoff methods
-
-+ (NSArray *)decodeObjects:(NSDictionary *)serializedObjects {
-    NSMutableArray *decodedObjects = [NSMutableArray arrayWithCapacity:[serializedObjects count]];
-
-    for (id key in serializedObjects) {
-        NSDictionary *objectRepresentation = [serializedObjects objectForKey:key];
-
-        Class klass = [CMObjectDecoder typeFromDictionaryRepresentation:objectRepresentation];
-
-        id stringifiedKey = key;
-        if (![stringifiedKey isKindOfClass:[NSString class]]) {
-            stringifiedKey = [stringifiedKey stringValue];
-        }
-
-        id<CMSerializable> decodedObject = nil;
-        if (klass == [CMUntypedObject class]) {
-            decodedObject = [[CMUntypedObject alloc] initWithFields:objectRepresentation objectId:stringifiedKey];
-        } else {
-            CMObjectDecoder *decoder = [[CMObjectDecoder alloc] initWithSerializedObjectRepresentation:objectRepresentation];
-            decodedObject = [[klass alloc] initWithCoder:decoder];
-        }
-
-        if (decodedObject) {
-            if(![decodedObject isKindOfClass:[CMObject class]] && ![decodedObject isKindOfClass:[CMUser class]]) {
-                [[NSException exceptionWithName:@"CMInternalInconsistencyException" reason:[NSString stringWithFormat:@"Can only deserialize top-level objects that inherit from CMObject. Got %@.", NSStringFromClass([decodedObject class])] userInfo:nil] raise];
-
-                return nil;
++ (void)initialize {
+    if (!_classMapping) {
+        Class * allClasses = NULL;
+        int count = objc_getClassList(NULL, 0);
+        
+        allClasses = (Class *)malloc(sizeof(Class) * count);
+        count = objc_getClassList(allClasses, count);
+        
+        NSMutableDictionary *classMapping = [NSMutableDictionary dictionary];;
+        for (int i = 0; i < count; i++) {
+            Class class = allClasses[i];
+            if ([class isSubclassOfClass:[CMObject class]]) {
+                NSString *className = [class className];
+                if (className) {
+                    [classMapping setObject:class forKey:className];
+                }
             }
-
-            [decodedObjects addObject:decodedObject];
-        } else {
-            NSLog(@"Failed to deserialize and inflate object with dictionary representation:\n%@", objectRepresentation);
         }
+        
+        [classMapping setObject:[NSDictionary class] forKey:@"map"];
+        [classMapping setObject:[NSDate class] forKey:CMDateTypeName];
+        
+        free(allClasses);
+        
+        _classMapping = [NSDictionary dictionaryWithDictionary:classMapping];
     }
-
-    return decodedObjects;
+    
+    if (!_typeMapping) {
+        _typeMapping = @{ CMACLTypeName : [CMACL class], CMFileTypeName : [CMFile class], CMUserTypeName : [CMUser class], CMGeoPointTypeName : [CMGeoPoint class], CMObjectReferenceTypeName : [CMObjectReference class], CMDateTypeName : [NSDate class] };
+    }
 }
 
-- (id)initWithSerializedObjectRepresentation:(NSDictionary *)representation {
-    if (self = [super init]) {
-        _dictionaryRepresentation = [representation copy];
++ (Class)klassFromRepresentation:(id)representation {
+    
+    if ([representation isKindOfClass:[NSDictionary class]]) {
+        
+        // Class mappings go *before* type mappings because the base types can be subclassed. Order is important!
+        NSString *className = [representation objectForKey:CMInternalClassStorageKey];
+        Class klass = [_classMapping objectForKey:className];
+        if (klass) return klass;
+        
+        NSString *typeName = [representation objectForKey:CMInternalTypeStorageKey];
+        klass = [_typeMapping objectForKey:typeName];
+        if (klass) return klass;        
     }
+    
+    return [representation class];
+}
+
++ (id)objectFromRepresentation:(NSDictionary *)representation {
+    CMObjectDecoder *coder = [[CMObjectDecoder alloc] initWithSerializedRepresentation:@{ @"key" : representation }];
+    return [coder decodeObjectForKey:@"key"];
+}
+
+- (id)init {
+    self = [self initWithSerializedRepresentation:nil];
     return self;
 }
 
-#pragma mark - Keyed archiving methods defined by NSCoder
-
-- (BOOL)containsValueForKey:(NSString *)key {
-    return ([_dictionaryRepresentation objectForKey:key] != nil);
-}
-
-- (BOOL)decodeBoolForKey:(NSString *)key {
-    if (![self containsValueForKey:key]) {
-        return NO;
+- (id)initWithSerializedRepresentation:(NSDictionary *)representation {
+    if (!representation) {
+        self = nil;
+        return self;
     }
-
-    id val = [_dictionaryRepresentation valueForKey:key];
-    if (val != nil && val != [NSNull null]) {
-        return [[_dictionaryRepresentation valueForKey:key] boolValue];
-    }
-    return NO;
-}
-
-- (double)decodeDoubleForKey:(NSString *)key {
-    if (![self containsValueForKey:key]) {
-        return (double)0.0;
-    }
-
-    id val = [_dictionaryRepresentation valueForKey:key];
-    if (val != nil && val != [NSNull null]) {
-        return [[_dictionaryRepresentation valueForKey:key] doubleValue];
-    }
-    return (double)0.0;
-}
-
-- (float)decodeFloatForKey:(NSString *)key {
-    if (![self containsValueForKey:key]) {
-        return 0.0f;
-    }
-
-    id val = [_dictionaryRepresentation valueForKey:key];
-    if (val != nil && val != [NSNull null]) {
-        return [[_dictionaryRepresentation valueForKey:key] floatValue];
-    }
-    return 0.0f;
-}
-
-- (int)decodeIntForKey:(NSString *)key {
-    if (![self containsValueForKey:key]) {
-        return 0;
-    }
-
-    id val = [_dictionaryRepresentation valueForKey:key];
-    if (val != nil && val != [NSNull null]) {
-        return [[_dictionaryRepresentation valueForKey:key] intValue];
-    }
-    return 0;
-}
-
-- (NSInteger)decodeIntegerForKey:(NSString *)key {
-    if (![self containsValueForKey:key]) {
-        return (NSInteger)0;
-    }
-
-    id val = [_dictionaryRepresentation valueForKey:key];
-    if (val != nil && val != [NSNull null]) {
-        return [[_dictionaryRepresentation valueForKey:key] integerValue];
-    }
-    return 0;
-}
-
-- (int32_t)decodeInt32ForKey:(NSString *)key {
-    if (![self containsValueForKey:key]) {
-        return (int32_t)0;
-    }
-
-    id val = [_dictionaryRepresentation valueForKey:key];
-    if (val != nil && val != [NSNull null]) {
-        return [[_dictionaryRepresentation valueForKey:key] intValue];
-    }
-    return (int32_t)0;
-}
-
-- (id)decodeObjectForKey:(NSString *)key {
-    return [self deserializeContentsOfObject:[_dictionaryRepresentation objectForKey:key]];
-}
-
-#pragma mark - Private encoding methods
-
-+ (Class)typeFromDictionaryRepresentation:(NSDictionary *)representation {
-    NSString *className = [representation objectForKey:CMInternalClassStorageKey];
-    NSString *typeName = [representation objectForKey:CMInternalTypeStorageKey];
-    Class klass = nil;
-
-    if ([className isEqualToString:CMInternalHashClassName]) {
-        klass = [NSDictionary class];
-    } else if ([typeName isEqualToString:@"user"] && !className) {
-        klass = [CMUser class];
-    } else {
-        // First try to look up a custom class name (i.e. a name given to a CMObject subclass by overriding +className).
-        klass = [[CMObjectClassNameRegistry sharedInstance] classForName:className];
-
-        // If it's still nil, assume the name is not custom but instead is actually just the name of the class.
-        if (klass == nil) {
-            klass = NSClassFromString(className);
-        }
-
-        // At this point we have no idea what the class is, so default to CMUntypedObject.
-        if (klass == nil) {
-            klass = [CMUntypedObject class];
-        }
-    }
-
-    return klass;
-}
-
-- (NSArray *)decodeAllInList:(NSArray *)list {
-    NSMutableArray *decodedArray = [NSMutableArray arrayWithCapacity:[list count]];
-    for (id item in list) {
-        [decodedArray addObject:[self deserializeContentsOfObject:item]];
-    }
-    return decodedArray;
-}
-
-- (NSDictionary *)decodeAllInDictionary:(NSDictionary *)dictionary {
-    NSMutableDictionary *decodedDictionary = [NSMutableDictionary dictionaryWithCapacity:[dictionary count]];
-    for (id key in dictionary) {
-        if (![CMInternalKeys containsObject:key]) {
-            [decodedDictionary setObject:[self deserializeContentsOfObject:[dictionary objectForKey:key]] forKey:key];
-        }
-    }
-    return decodedDictionary;
-}
-
-- (id)deserializeContentsOfObject:(id)objv {
-    if (!objv || [objv isKindOfClass:[NSNull class]]) {
-        return nil;
-    } else if ([objv isKindOfClass:[NSString class]] || [objv isKindOfClass:[NSNumber class]]) {
-        // Strings and numbers are natively handled and need no further decomposition.
-        return objv;
-    } else if ([objv isKindOfClass:[NSArray class]]) {
-        return [self decodeAllInList:objv];
-    } else if ([objv isKindOfClass:[NSDictionary class]]) {
-        // For now we need to special-case CMGeoPoint and CMDate since we don't support nested objects other
-        // than dictionaries at this point. Once that support is added we can simply use the CMObjectClassNameRegistry
-        // to deserialize any class properly.
-
-        if ([[objv objectForKey:CMInternalClassStorageKey] isEqualToString:CMInternalHashClassName]) {
-            return [self decodeAllInDictionary:objv];
-        } else {
-            CMObjectDecoder *subObjectDecoder = [[CMObjectDecoder alloc] initWithSerializedObjectRepresentation:objv];
-            if ([[objv objectForKey:CMInternalTypeStorageKey] isEqualToString:CMGeoPointClassName]) {
-                // Note that this uses CMInternalTypeStorageKey instead of CMInternalClassStorageKey on purpose
-                // since the CM backend treats these objects as special unicorns (i.e. it has to know to geoindex them).
-                return [[CMGeoPoint alloc] initWithCoder:subObjectDecoder];
-            } else if ([[objv objectForKey:CMInternalTypeStorageKey] isEqualToString:CMACLTypeName]) {
-                return [[CMACL alloc] initWithCoder:subObjectDecoder];
-            } else if ([[objv objectForKey:CMInternalClassStorageKey] isEqualToString:CMDateClassName]) {
-                return [[CMDate alloc] initWithCoder:subObjectDecoder];
+    
+    if ((self = [super init])) {
+        
+        // A rescursive block to remove NSNull instances
+        __block id (^removeNull)(id) = ^(id rootObject) {
+            // Recurse through dictionaries
+            if ([rootObject isKindOfClass:[NSDictionary class]]) {
+                NSMutableDictionary *sanitizedDictionary = [NSMutableDictionary dictionaryWithDictionary:rootObject];
+                [rootObject enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+                    id sanitized = removeNull(obj);
+                    if (!sanitized) {
+                        [sanitizedDictionary removeObjectForKey:key];
+                    } else {
+                        [sanitizedDictionary setObject:sanitized forKey:key];
+                    }
+                }];
+                
+                return [NSDictionary dictionaryWithDictionary:sanitizedDictionary];
             }
-        }
+            
+            // Recurse through arrays
+            if ([rootObject isKindOfClass:[NSArray class]]) {
+                NSMutableArray *sanitizedArray = [NSMutableArray arrayWithArray:rootObject];
+                [rootObject enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
+                    id sanitized = removeNull(obj);
+                    if (!sanitized) {
+                        [sanitizedArray removeObjectIdenticalTo:obj];
+                    } else {
+                        [sanitizedArray replaceObjectAtIndex:[sanitizedArray indexOfObject:obj] withObject:sanitized];
+                    }
+                }];
+                
+                return [NSArray arrayWithArray:sanitizedArray];
+            }
+            
+            // Base case
+            if ([rootObject isKindOfClass:[NSNull class]]) {
+                return (id)nil;
+            } else {
+                return rootObject;
+            }
+        };
+        
+        _representation = removeNull(representation);
     }
-
-    [[NSException exceptionWithName:@"CMInternalInconsistencyException"
-                             reason:@"Trying to deserialize a non-dictionary object is not supported."
-                           userInfo:nil]
-     raise];
-
-    return nil;
-
-        //TODO: Uncomment the lines below when server-side support for object relationships is done.
-
-//        // A new decoder is needed as we are digging down further into a custom object.
-//        CMObjectDecoder *subObjectDecoder = [[CMObjectDecoder alloc] initWithSerializedObjectRepresentation:objv];
-//        Class objectClass = [CMObjectDecoder typeFromDictionaryRepresentation:objv];
-//        return [[objectClass alloc] initWithCoder:subObjectDecoder];
+    
+    return self;
 }
-
-#pragma mark - Required methods (metadata and base serialization methods)
 
 - (BOOL)allowsKeyedCoding {
     return YES;
 }
 
-#pragma mark - Unimplemented methods
+#pragma mark - Keyed archiving methods defined by NSCoder
 
-- (void)encodeObject:(id)object {
-    [[NSException exceptionWithName:NSInvalidArgumentException
-                             reason:@"Cannot call encode methods on an decoder"
-                           userInfo:nil]
-     raise];
+- (BOOL)containsValueForKey:(NSString *)key {
+    return [_representation objectForKey:key] != nil;
+}
+
+- (BOOL)decodeBoolForKey:(NSString *)key {
+    return [[_representation objectForKey:key] boolValue];
+}
+
+- (double)decodeDoubleForKey:(NSString *)key {
+    return [[_representation objectForKey:key] doubleValue];
+}
+
+- (float)decodeFloatForKey:(NSString *)key {
+    return [[_representation objectForKey:key] floatValue];
+}
+
+- (int)decodeIntForKey:(NSString *)key {
+    return [[_representation objectForKey:key] intValue];
+}
+
+- (NSInteger)decodeIntegerForKey:(NSString *)key {
+    return [[_representation objectForKey:key] integerValue];
+}
+
+- (int32_t)decodeInt32ForKey:(NSString *)key {
+    return [[_representation objectForKey:key] intValue];
 }
 
 - (int64_t)decodeInt64ForKey:(NSString *)key {
-    [[NSException exceptionWithName:NSInvalidArgumentException
-                             reason:@"64-bit integers are not supported. Decode as 32-bit."
-                           userInfo:nil]
-     raise];
-
+    [NSException raise:NSInvalidArgumentException format:@"64-bit integers are not supported. Decode as 32-bit."];
     return (int64_t)0;
+}
+
+- (id)decodeObjectForKey:(NSString *)key {
+    id obj = [_representation objectForKey:key];
+    Class klass = [CMObjectDecoder klassFromRepresentation:obj];
+    
+    // Handle dates explicitly
+    if ([klass isSubclassOfClass:[NSDate class]]) {
+        NSTimeInterval timestamp = [[_representation objectForKey:CMDateTimestampKey] doubleValue];
+        return [NSDate dateWithTimeIntervalSince1970:timestamp];
+    }
+    
+    // Handle arrays explicitly
+    if ([klass isSubclassOfClass:[NSArray class]]) {
+        NSMutableArray *array = [NSMutableArray array];
+        [obj enumerateObjectsUsingBlock:^(id member, NSUInteger idx, BOOL *stop) {
+            id decodedObject = [[self class] objectFromRepresentation:member];
+            
+            [array addObject:decodedObject];
+        }];
+        
+        return [NSArray arrayWithArray:array];
+    }
+    
+    // Handle dictionaries explicitly
+    if ([klass isSubclassOfClass:[NSDictionary class]]) {
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+        
+        [obj enumerateKeysAndObjectsUsingBlock:^(id key, id value, BOOL *stop) {
+            id decodedObject = [[self class] objectFromRepresentation:value];
+            
+            [dictionary setObject:decodedObject forKey:key];
+        }];
+        
+        return [NSDictionary dictionaryWithDictionary:dictionary];
+    }
+    
+    CMObjectDecoder *decoder = [[CMObjectDecoder alloc] initWithSerializedRepresentation:obj];
+    id decodedObject = [[klass alloc] initWithCoder:decoder];
+    
+    if ([klass isSubclassOfClass:[CMObjectReference class]]) {
+        // TODO: Untangle references in a sane manner
+    }
+    
+    return decodedObject;
+}
+
+- (void)encodeObject:(id)object {
+    [NSException raise:NSInvalidArgumentException format:@"Cannot call encode methods on an decoder"];
 }
 
 @end

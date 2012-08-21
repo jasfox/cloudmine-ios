@@ -7,53 +7,25 @@
 //
 
 #import <CoreLocation/CoreLocation.h>
-#include <math.h>
-#import "CMObject.h"
 
-extern NSString * const CMGeoPointClassName;
-
-@interface CMGeoPoint : CMObject {
-
-}
+extern NSString * const CMGeoPointTypeName;
 
 /**
- * Initializes a new instance of this class with the given latitude and longitude.
- *
- * @param theLatitude The latitude in <strong>degrees</strong>.
- * @param theLongitude The longitude in <strong>degrees</strong>.
+  The object representing the CloudMine's geopoint data type.
  */
-- (id)initWithLatitude:(double)theLatitude andLongitude:(double)theLongitude;
+@interface CMGeoPoint : NSObject
 
 /**
- * Initializes a new instance of this class with the given latitude and longitude.
- *
- * This is a convenience constructor for when lat/long are in radians. This converts them
- * into degrees before storing.
- *
- * @param theLatitude The latitude in <strong>radians</strong>.
- * @param theLongitude The longitude in <strong>radians</strong>.
- */
-- (id)initWithLatitudeInRadians:(double)theLatitude andLongitudeInRadians:(double)theLongitude;
+  The coordinate of the geopoint
+  */
+@property (readonly, nonatomic) CLLocationCoordinate2D coordinate;
 
 /**
- * Initializes a new instance of this class given a <tt>CLLocation</tt> object most likely obtained from
- * <tt>CLLocationManager</tt> or some other part of the CoreLocation framework.
- *
- * @param location The <tt>CLLocation</tt> instance describing the location.
- *
- * @see https://developer.apple.com/library/ios/#documentation/CoreLocation/Reference/CLLocation_Class/CLLocation/CLLocation.html
- * @see https://developer.apple.com/library/ios/#documentation/UserExperience/Conceptual/LocationAwarenessPG/Introduction/Introduction.html
+  Initializes a CMGeoPoint object with the given coordinate
+  
+  @param coordinate The coordinate to initialize the object with
+  @returns A newly initialized CMGeoPoint object with the coordinate set.
  */
-- (id)initWithCLLocation:(CLLocation *)location;
-
-/**
- * The latitude in degrees.
- */
-@property (atomic, assign) double latitude;
-
-/**
- * The longitude in degrees.
- */
-@property (atomic, assign) double longitude;
+- (id)initWithCoordinate:(CLLocationCoordinate2D)coordinate;
 
 @end

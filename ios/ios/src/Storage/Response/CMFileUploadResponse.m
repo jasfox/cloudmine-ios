@@ -13,15 +13,15 @@
 @synthesize result;
 @synthesize key;
 
-- (id)initWithResult:(CMFileUploadResult)theResult key:(NSString *)theKey {
+- (id)initWithResult:(int)theResult key:(NSString *)theKey {
     return [self initWithResult:theResult key:theKey snippetResult:nil responseMetadata:nil];
 }
 
-- (id)initWithResult:(CMFileUploadResult)theResult key:(NSString *)theKey snippetResult:(CMSnippetResult *)theSnippetResult {
+- (id)initWithResult:(int)theResult key:(NSString *)theKey snippetResult:(CMSnippetResult *)theSnippetResult {
     return [self initWithResult:theResult key:theKey snippetResult:theSnippetResult responseMetadata:nil];
 }
 
-- (id)initWithResult:(CMFileUploadResult)theResult key:(NSString *)theKey snippetResult:(CMSnippetResult *)theSnippetResult responseMetadata:(CMResponseMetadata *)theMetadata {
+- (id)initWithResult:(int)theResult key:(NSString *)theKey snippetResult:(CMSnippetResult *)theSnippetResult responseMetadata:(CMResponseMetadata *)theMetadata {
     if (self = [super initWithMetadata:theMetadata snippetResult:theSnippetResult]) {
         self.result = theResult;
         self.key = theKey;

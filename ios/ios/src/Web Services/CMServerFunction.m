@@ -6,7 +6,6 @@
 //  See LICENSE file included with SDK for details.
 //
 
-#import <YAJLiOS/YAJL.h>
 #import "CMServerFunction.h"
 
 @implementation CMServerFunction
@@ -75,7 +74,7 @@
     }
 
     if (self.extraParameters && [self.extraParameters count] > 0) {
-        [querySegments addObject:[NSString stringWithFormat:@"params=%@", [self.extraParameters yajl_JSONString]]];
+        [querySegments addObject:nil];
     }
 
     if (self.resultOnly) {

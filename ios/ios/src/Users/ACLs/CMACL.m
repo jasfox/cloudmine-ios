@@ -7,30 +7,24 @@
 //
 
 #import "CMACL.h"
-#import "CMNullStore.h"
 #import "CMObjectSerialization.h"
+
+NSString * const CMACLTypeName = @"acl";
 
 NSString * const CMACLReadPermission = @"r";
 NSString * const CMACLUpdatePermission = @"u";
 NSString * const CMACLDeletePermission = @"d";
-NSString * const CMACLTypeName = @"acl";
 
-static __strong NSSet *avaiablePermissions;
+NSString * const CMACLMembersKey = @"members";
+NSString * const CMACLPermissionsKey = @"permissions";
 
 @implementation CMACL
 
-@synthesize members = _members;
-@synthesize permissions = _permissions;
-
 + (NSString *)className {
-    return CMACLTypeName;
+    return nil;
 }
 
-#pragma mark - Constructors
-
-+ (void)load {
-    avaiablePermissions = [NSSet setWithObjects:CMACLReadPermission, CMACLDeletePermission, CMACLUpdatePermission, nil];
-}
+#pragma mark - Initialization
 
 - (id)init {
     if (self = [super init]) {
@@ -44,69 +38,36 @@ static __strong NSSet *avaiablePermissions;
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
     if (self = [super initWithCoder:aDecoder]) {
-        _members = [NSMutableSet setWithArray:[aDecoder decodeObjectForKey:@"members"]];
-        _permissions = [NSMutableSet setWithArray:[aDecoder decodeObjectForKey:@"permissions"]];
+        _members = [NSMutableSet setWithArray:[aDecoder decodeObjectForKey:CMACLMembersKey]];
+        _permissions = [NSMutableSet setWithArray:[aDecoder decodeObjectForKey:CMACLPermissionsKey]];
     }
     return self;
 }
 
-- (void)setPermissions:(NSSet *)permissions {
-    if (permissions != _permissions) {
-        if (![permissions isSubsetOfSet:avaiablePermissions])
-            [NSException raise:NSInternalInconsistencyException format:@"The permissions %@ are not valid!", permissions];
-        _permissions = permissions;
-    }
-}
-
 - (void)encodeWithCoder:(NSCoder *)aCoder {
     [super encodeWithCoder:aCoder];
-    [aCoder encodeObject:[_members allObjects] forKey:@"members"];
-    [aCoder encodeObject:[_permissions allObjects] forKey:@"permissions"];
+    [aCoder encodeObject:[_members allObjects] forKey:CMACLMembersKey];
+    [aCoder encodeObject:[_permissions allObjects] forKey:CMACLPermissionsKey];
     [aCoder encodeObject:CMACLTypeName forKey:CMInternalTypeStorageKey];
 }
 
-- (void)save:(CMStoreObjectUploadCallback)callback {
-    if ([self.store objectOwnershipLevel:self] == CMObjectOwnershipUndefinedLevel) {
-        [self.store addACL:self];
+#pragma mark - Recursion breaking
+
+// TODO: Do not allow setting/getting of ACLs
+
+#pragma mark - Other
+
+- (void)setPermissions:(NSSet *)permissions {
+    if (permissions != _permissions) {
+        NSSet *availablePermissions = [NSSet setWithObjects:CMACLReadPermission, CMACLUpdatePermission, CMACLDeletePermission, nil];
+        
+        // Reduce list of permissions to only valid values
+        NSMutableSet *mutPermissions = [NSMutableSet setWithSet:permissions];
+        [mutPermissions intersectSet:availablePermissions];
+        permissions = [NSSet setWithSet:mutPermissions];
+        
+        _permissions = permissions;
     }
-    
-    [self.store saveACL:self callback:callback];
-}
-
-- (void)saveWithUser:(CMUser *)user callback:(CMStoreObjectUploadCallback)callback {
-    [self save:callback];
-}
-
-- (CMObjectOwnershipLevel)ownershipLevel {
-    if (self.store != nil && self.store != [CMNullStore nullStore]) {
-        return [self.store objectOwnershipLevel:self];
-    } else {
-        return CMObjectOwnershipUndefinedLevel;
-    }
-}
-
-- (void)getACLs:(CMStoreACLFetchCallback)callback {
-    [NSException raise:NSInternalInconsistencyException format:@"A CMACL object cannot have any ACLs associated with it."];
-}
-
-- (void)saveACLs:(CMStoreObjectUploadCallback)callback {
-    [NSException raise:NSInternalInconsistencyException format:@"A CMACL object cannot have any ACLs associated with it."];
-}
-
-- (void)removeACL:(CMACL *)acl callback:(CMStoreObjectUploadCallback)callback {
-    [NSException raise:NSInternalInconsistencyException format:@"A CMACL object cannot have any ACLs associated with it."];    
-}
-
-- (void)removeACLs:(NSArray *)acls callback:(CMStoreObjectUploadCallback)callback {
-    [NSException raise:NSInternalInconsistencyException format:@"A CMACL object cannot have any ACLs associated with it."];
-}
-
-- (void)addACL:(CMACL *)acl callback:(CMStoreObjectUploadCallback)callback {
-    [NSException raise:NSInternalInconsistencyException format:@"A CMACL object cannot have any ACLs associated with it."];
-}
-
-- (void)addACLs:(NSArray *)acls callback:(CMStoreObjectUploadCallback)callback {    
-    [NSException raise:NSInternalInconsistencyException format:@"A CMACL object cannot have any ACLs associated with it."];
 }
 
 @end

@@ -8,57 +8,43 @@
 
 #import "CMGeoPoint.h"
 #import "CMObjectSerialization.h"
-#import "math+floats.h"
 
-NSString * const CMGeoPointClassName = @"geopoint";
+NSString * const CMGeoPointTypeName = @"geopoint";
+
+NSString * const CMGeoPointLatitudeKey = @"latitude";
+NSString * const CMGeoPointLongitudeKey = @"latitude";
 
 @implementation CMGeoPoint
 
-@synthesize latitude;
-@synthesize longitude;
+#pragma mark - Initialization
 
-#pragma - Initialization and deserialization
-
-- (id)initWithLatitude:(double)theLatitude andLongitude:(double)theLongitude {
-    if (self = [super init]) {
-        self.latitude = theLatitude;
-        self.longitude = theLongitude;
+- (id)initWithCoordinate:(CLLocationCoordinate2D)coordinate {
+    if (!CLLocationCoordinate2DIsValid(coordinate)) {
+        self = nil;
+        return self;
+    }
+    
+    if ((self = [super init])) {
+        _coordinate = coordinate;
     }
     return self;
 }
 
-- (id)initWithLatitudeInRadians:(double)theLatitude andLongitudeInRadians:(double)theLongitude {
-    const double radianMultiplier = 180 / M_PI;
-    return [self initWithLatitude:theLatitude*radianMultiplier andLongitude:theLongitude*radianMultiplier];
-}
+#pragma mark - Serialization
 
 - (id)initWithCoder:(NSCoder *)aDecoder {
-    return [self initWithLatitude:[aDecoder decodeDoubleForKey:@"latitude"]
-                     andLongitude:[aDecoder decodeDoubleForKey:@"longitude"]];
+    CLLocationDegrees latitude = [aDecoder decodeDoubleForKey:CMGeoPointLatitudeKey];
+    CLLocationDegrees longitude = [aDecoder decodeDoubleForKey:CMGeoPointLongitudeKey];
+    CLLocationCoordinate2D coordinate = CLLocationCoordinate2DMake(latitude, longitude);
+    
+    self = [self initWithCoordinate:coordinate];
+    return self;
 }
-
-- (id)initWithCLLocation:(CLLocation *)location {
-    return [self initWithLatitude:location.coordinate.latitude
-                     andLongitude:location.coordinate.longitude];
-}
-
-#pragma mark - Serialization methods
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
-    [super encodeWithCoder:aCoder];
-    [aCoder encodeDouble:self.latitude forKey:@"latitude"];
-    [aCoder encodeDouble:self.longitude forKey:@"longitude"];
-    [aCoder encodeObject:CMGeoPointClassName forKey:CMInternalTypeStorageKey];
-}
-
-#pragma mark - Comparison
-
-- (BOOL)isEqual:(id)object {
-    if (![object isKindOfClass:[self class]]) {
-        return NO;
-    } else {
-        return (fequal(self.latitude, [object latitude]) && fequal(self.longitude, [object longitude]));
-    }
+    [aCoder encodeDouble:_coordinate.latitude forKey:CMGeoPointLatitudeKey];
+    [aCoder encodeDouble:_coordinate.longitude forKey:CMGeoPointLongitudeKey];
+    [aCoder encodeObject:CMGeoPointTypeName forKey:CMInternalTypeStorageKey];
 }
 
 @end

@@ -15,13 +15,11 @@
 #import "CMUser.h"
 #import "CMFile.h"
 #import "CMStoreCallbacks.h"
-#import "CMFileUploadResult.h"
 #import "CMObjectOwnershipLevel.h"
 
 #import "CMObjectFetchResponse.h"
 #import "CMObjectUploadResponse.h"
 #import "CMFileFetchResponse.h"
-#import "CMFileUploadResult.h"
 #import "CMDeleteResponse.h"
 
 @class CMObject;
@@ -50,11 +48,6 @@ extern NSString * const CMStoreObjectDeletedNotification;
  * will contain a mapping of object IDs to the object instances that were deleted.
  */
 @interface CMStore : NSObject
-
-/** 
- * The <tt>CMWebService</tt> instance that backs this store.
- */
-@property (nonatomic, strong) CMWebService *webService;
 
 /**
  * The user to be used when accessing user-level objects. This is ignored for app-level objects.
@@ -500,7 +493,7 @@ extern NSString * const CMStoreObjectDeletedNotification;
  *
  * @see https://cloudmine.me/developer_zone#ref/json_delete
  */
-- (void)deleteObject:(id<CMSerializable>)theObject additionalOptions:(CMStoreOptions *)options callback:(CMStoreDeleteCallback)callback;
+- (void)deleteObject:(CMObject *)theObject additionalOptions:(CMStoreOptions *)options callback:(CMStoreDeleteCallback)callback;
 
 /**
  * Saves a file to your app's CloudMine data store at the app-level. This works by streaming the contents of the
@@ -662,7 +655,7 @@ extern NSString * const CMStoreObjectDeletedNotification;
  * @see https://cloudmine.me/developer_zone#ref/json_delete
  * @see https://cloudmine.me/developer_zone#ref/account_overview
  */
-- (void)deleteUserObject:(id<CMSerializable>)theObject additionalOptions:(CMStoreOptions *)options callback:(CMStoreDeleteCallback)callback;
+- (void)deleteUserObject:(CMObject *)theObject additionalOptions:(CMStoreOptions *)options callback:(CMStoreDeleteCallback)callback;
 
 /**
  * Deletes the given ACL from CloudMine's data store and removes the acl from this store. The store must be configured
