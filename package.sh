@@ -19,6 +19,8 @@ mkdir $DEPLOY_DIR
 cp -R "ios/build/Release-iphoneuniversal/CloudMine.framework" $DEPLOY_DIR
 cp -R "ios/docs" $DEPLOY_DIR
 
+rm -rf "ios/docs"
+
 echo "Tarballing deploy directory..."
 if [ -e $ARCHIVE_NAME ]; then
   rm $ARCHIVE_NAME
