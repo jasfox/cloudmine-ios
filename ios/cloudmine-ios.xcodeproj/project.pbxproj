@@ -70,6 +70,7 @@
 		7A308A3C14798F29008ADD3C /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A0413D9146C5B7400EF537A /* libz.dylib */; };
 		7A308A4414799134008ADD3C /* CMWebServiceSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A308A4314799134008ADD3C /* CMWebServiceSpec.m */; };
 		7A308A4C14799471008ADD3C /* libKiwi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A308A4B14799471008ADD3C /* libKiwi.a */; };
+		7A3DCEEF15EECBB600AC4890 /* AFHTTPClient.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = D088F59B15E3FDF1005062BD /* AFHTTPClient.h */; };
 		7A4A6FB91500474500B95D13 /* CMUserAccountResult.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7A4A6F2B14FFF3CF00B95D13 /* CMUserAccountResult.h */; };
 		7A58CC2214F1B544003E864B /* CMMimeType.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A58CC2014F1B544003E864B /* CMMimeType.m */; };
 		7A58CC2314F1B54E003E864B /* CMMimeType.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7A58CC1F14F1B544003E864B /* CMMimeType.h */; };
@@ -169,6 +170,7 @@
 			dstPath = "${BUILD_DIR}/${CONFIGURATION}-iphoneuniversal/${PRODUCT_NAME}.framework/Versions/A/Headers/";
 			dstSubfolderSpec = 0;
 			files = (
+				7A3DCEEF15EECBB600AC4890 /* AFHTTPClient.h in CopyFiles */,
 				D03A4D5C15B48D2200A956BC /* CMACLFetchResponse.h in CopyFiles */,
 				7AF00BA215A8DC7C0070442A /* CMACL.h in CopyFiles */,
 				7AF00BA315A8DC7C0070442A /* CMUser.h in CopyFiles */,
