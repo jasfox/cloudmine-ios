@@ -7,6 +7,7 @@
 //
 
 #import <objc/runtime.h>
+#import "SPLowVerbosity.h"
 
 #import "CMStore.h"
 #import "CMObject+Private.h"
