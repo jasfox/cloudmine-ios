@@ -6,9 +6,10 @@
 //  See LICENSE file included with SDK for details.
 //
 
-#import "CMStore.h"
 #import <objc/runtime.h>
-#import "SPLowVerbosity.h"
+
+#import "CMStore.h"
+#import "CMObject+Private.h"
 
 #import "CMWebService.h"
 #import "CMObjectDecoder.h"
@@ -24,6 +25,8 @@
 #import "CMFileUploadResponse.h"
 #import "CMDeleteResponse.h"
 
+#import "SPLowVerbosity.h"
+
 #define _CMAssertAPICredentialsInitialized NSAssert([[CMAPICredentials sharedInstance] appSecret] != nil && [[[CMAPICredentials sharedInstance] appSecret] length] > 0 && [[CMAPICredentials sharedInstance] appIdentifier] != nil && [[[CMAPICredentials sharedInstance] appIdentifier] length] > 0, @"The CMAPICredentials singleton must be initialized before using a CloudMine Store")
 #define _CMAssertUserConfigured NSAssert(user, @"You must set the user of this store to a CMUser before querying for user-level objects.")
 #define _CMUserOrNil (userLevel ? user : nil)
@@ -36,13 +39,6 @@
 NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotification";
 
 #pragma mark -
-
-@interface CMObject (Private)
-@property (getter = isDirty) BOOL dirty;
-@property (readwrite, strong, nonatomic) NSString *ownerId;
-@property (strong, nonatomic) CMACL *sharedACL;
-@property (strong, nonatomic) NSArray *aclIds;
-@end
 
 @interface CMStore ()
 - (void)_allObjects:(CMStoreObjectFetchCallback)callback userLevel:(BOOL)userLevel additionalOptions:(CMStoreOptions *)options;
@@ -129,7 +125,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
         } else {
             _cachedUserObjects = [[NSMutableDictionary alloc] init];
         }
-        
+
         if (_cachedACLs) {
             [_cachedACLs enumerateKeysAndObjectsUsingBlock:^(id key, CMACL *obj, BOOL *stop) {
                 obj.store = nil;
@@ -138,7 +134,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
         } else {
             _cachedACLs = [[NSMutableDictionary alloc] init];
         }
-        
+
         if (_cachedUserFiles) {
             [_cachedUserFiles enumerateKeysAndObjectsUsingBlock:^(id key, CMObject *obj, BOOL *stop) {
                 obj.store = nil;
@@ -217,13 +213,13 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
             NSDate *expirationDate = [self.dateFormatter dateFromString:[headers objectForKey:CM_TOKENEXPIRATION_HEADER]];
             if (expirationDate)
                 user.tokenExpiration = expirationDate;
-            
+
             // Decode and cache objects
             NSSet *acls = [NSSet setWithArray:[CMObjectDecoder decodeObjects:results]];
             [acls enumerateObjectsUsingBlock:^(CMACL *acl, BOOL *stop) {
                 [self addACL:acl];
             }];
-            
+
             CMACLFetchResponse *response = [[CMACLFetchResponse alloc] initWithACLs:acls errors:errors];
             if (callback) {
                 callback(response);
@@ -265,7 +261,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                       CMSnippetResult *result = [[CMSnippetResult alloc] initWithData:snippetResult];
                       CMObjectFetchResponse *response = [[CMObjectFetchResponse alloc] initWithObjects:objects errors:errors snippetResult:result responseMetadata:metadata];
                       response.count = count ? [count intValue] : [objects count];
-                      
+
                       [objects enumerateObjectsUsingBlock:^(CMObject *obj, NSUInteger idx, BOOL *stop) {
                           obj.ownerId = [metadata metadataForObject:obj ofType:@"owner"];
                           NSArray *permissions = [metadata metadataForObject:obj ofType:@"permissions"];
@@ -276,7 +272,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                               obj.sharedACL = acl;
                           }
                       }];
-                      
+
                       NSDate *expirationDate = [self.dateFormatter dateFromString:[headers objectForKey:CM_TOKENEXPIRATION_HEADER]];
                       if (expirationDate && userLevel) {
                           user.tokenExpiration = expirationDate;
@@ -355,7 +351,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                      [self cacheObjectsInMemory:objects atUserLevel:userLevel];
                      CMObjectFetchResponse *response = [[CMObjectFetchResponse alloc] initWithObjects:objects errors:errors snippetResult:result responseMetadata:metadata];
                      response.count = count ? [count intValue] : [objects count];
-                     
+
                      [objects enumerateObjectsUsingBlock:^(CMObject *obj, NSUInteger idx, BOOL *stop) {
                          obj.ownerId = [metadata metadataForObject:obj ofType:@"owner"];
                          NSArray *permissions = [metadata metadataForObject:obj ofType:@"permissions"];
@@ -366,7 +362,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                              obj.sharedACL = acl;
                          }
                      }];
-                     
+
                      NSDate *expirationDate = [self.dateFormatter dateFromString:[headers objectForKey:CM_TOKENEXPIRATION_HEADER]];
                      if (expirationDate && userLevel) {
                          user.tokenExpiration = expirationDate;
@@ -394,13 +390,13 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
             NSDate *expirationDate = [self.dateFormatter dateFromString:[headers objectForKey:CM_TOKENEXPIRATION_HEADER]];
             if (expirationDate)
                 user.tokenExpiration = expirationDate;
-            
+
             // Decode and cache objects
             NSSet *acls = [NSSet setWithArray:[CMObjectDecoder decodeObjects:results]];
             [acls enumerateObjectsUsingBlock:^(CMACL *acl, BOOL *stop) {
                 [self addACL:acl];
             }];
-            
+
             CMACLFetchResponse *response = [[CMACLFetchResponse alloc] initWithACLs:acls errors:errors];
             if (callback) {
                 callback(response);
@@ -488,13 +484,13 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     NSParameterAssert(objects);
     _CMAssertAPICredentialsInitialized;
     [self cacheObjectsInMemory:objects atUserLevel:userLevel];
-    
+
     NSMutableArray *cleanObjects = [NSMutableArray array];
     NSMutableArray *dirtyObjects = [NSMutableArray array];
     [objects enumerateObjectsUsingBlock:^(CMObject* obj, NSUInteger idx, BOOL *stop) {
         obj.dirty ? [dirtyObjects addObject:obj] : [cleanObjects addObject:obj];
     }];
-    
+
     // Only send the dirty objects to the servers
     [webService updateValuesFromDictionary:[CMObjectEncoder encodeObjects:dirtyObjects]
                         serverSideFunction:_CMTryMethod(options, serverSideFunction)
@@ -508,7 +504,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                                     [mutResults setObject:@"updated" forKey:obj.objectId];
                                 }];
                                 results = [mutResults copy];
-                                
+
                                 CMResponseMetadata *metadata = [[CMResponseMetadata alloc] initWithMetadata:meta];
                                 CMSnippetResult *result = [[CMSnippetResult alloc] initWithData:snippetResult];
                                 CMObjectUploadResponse *response = [[CMObjectUploadResponse alloc] initWithUploadStatuses:results snippetResult:result responseMetadata:metadata];
@@ -517,7 +513,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                                 if (expirationDate && userLevel) {
                                     user.tokenExpiration = expirationDate;
                                 }
-                                
+
                                 // If the dirty objects were successfully uploaded, mark them as clean
                                 [dirtyObjects enumerateObjectsUsingBlock:^(CMObject *object, NSUInteger idx, BOOL *stop) {
                                     NSString *status = [response.uploadStatuses objectForKey:object.objectId];
@@ -525,7 +521,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                                         object.dirty = NO;
                                     }
                                 }];
-                                
+
                                 if (callback) {
                                     callback(response);
                                 }
@@ -547,7 +543,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
         if (obj)
             [acls addObject:obj];
     }];
-    
+
     [self saveACLs:acls callback:callback];
 }
 
@@ -558,21 +554,21 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
         callback([[CMObjectUploadResponse alloc] init]);
         return;
     }
-    
+
     [self _ensureUserLoggedInWithCallback:^{
         [acls enumerateObjectsUsingBlock:^(CMACL *acl, NSUInteger idx, BOOL *stop) {
             [self addACL:acl];
         }];
-        
+
         __block NSUInteger index = 0;
         NSMutableDictionary *uploadStatuses = [NSMutableDictionary dictionary];
-        
+
         __block CMWebServiceObjectFetchSuccessCallback successHandler;
-        
+
         CMWebServiceFetchFailureCallback errorHandler = ^(NSError *error) {
             successHandler(nil, [NSDictionary dictionaryWithObject:[error localizedDescription] forKey:[[acls objectAtIndex:index] objectId]], nil, nil, nil, nil);
         };
-        
+
         successHandler = ^(NSDictionary *results, NSDictionary *errors, NSDictionary *meta, id snippetResult, NSNumber *count, NSDictionary *headers) {
             CMACL *acl = [[CMObjectDecoder decodeObjects:results] lastObject];
             if (acl) {
@@ -582,7 +578,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
             } else {
                 [uploadStatuses addEntriesFromDictionary:errors];
             }
-            
+
             index++;
             if (index < acls.count) {
                 acl = [acls objectAtIndex:index];
@@ -597,7 +593,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                     callback(response);
             }
         };
-        
+
         CMACL *acl = [acls objectAtIndex:index];
         NSDictionary *aclDict = [[CMObjectEncoder encodeObjects:[NSSet setWithObject:acl]] objectForKey:acl.objectId];
         if (acl.dirty)
@@ -863,22 +859,22 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
         callback([[CMDeleteResponse alloc] init]);
         return;
     }
-    
+
     [self _ensureUserLoggedInWithCallback:^{
         [acls enumerateObjectsUsingBlock:^(CMACL *acl, NSUInteger idx, BOOL *stop) {
             [self removeACL:acl];
         }];
-        
+
         __block NSUInteger index = 0;
         NSMutableDictionary *allSuccess = [NSMutableDictionary dictionary];
         NSMutableDictionary *allErrors = [NSMutableDictionary dictionary];
-        
+
         __block CMWebServiceObjectFetchSuccessCallback successHandler;
-        
+
         CMWebServiceFetchFailureCallback errorHandler = ^(NSError *error) {
             successHandler(nil, [NSDictionary dictionaryWithObject:[error localizedDescription] forKey:[[acls objectAtIndex:index] objectId]], nil, nil, nil, nil);
         };
-        
+
         successHandler = ^(NSDictionary *results, NSDictionary *errors, NSDictionary *meta, id snippetResult, NSNumber *count, NSDictionary *headers) {
             if (results) {
                 // Remove all references to ACL in cached objects (this is actually performed server side)
@@ -887,12 +883,12 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                     [objectIds removeObjectsInArray:[results allKeys]];
                     obj.aclIds = [objectIds copy];
                 }];
-                
+
                 [allSuccess addEntriesFromDictionary:results];
             } else if (errors) {
                 [allErrors addEntriesFromDictionary:errors];
             }
-            
+
             index++;
             if (index < acls.count) {
                 CMACL *acl = [acls objectAtIndex:index];
@@ -903,7 +899,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
                     callback(response);
             }
         };
-        
+
         CMACL *acl = [acls objectAtIndex:index];
         [webService deleteACLWithKey:acl.objectId user:user successHandler:successHandler errorHandler:errorHandler];
     }];
@@ -974,7 +970,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     @synchronized(self) {
         [_cachedACLs setObject:acl forKey:acl.objectId];
     }
-    
+
     if (acl.store != self) {
         acl.store = self;
     }
@@ -1027,7 +1023,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     @synchronized(self) {
         [_cachedACLs removeObjectForKey:acl.objectId];
     }
-    
+
     if (acl.store) {
         acl.store = nil;
     }
@@ -1039,7 +1035,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     @synchronized(self) {
         [_cachedUserFiles setObject:theFile forKey:theFile.uuid];
     }
-    
+
     if (theFile.store != self) {
         theFile.store = self;
     }
@@ -1050,7 +1046,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     @synchronized(self) {
         [_cachedAppFiles setObject:theFile forKey:theFile.uuid];
     }
-    
+
     if (theFile.store != self) {
         theFile.store = self;
     }
@@ -1060,7 +1056,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     @synchronized(self) {
         [_cachedAppFiles removeObjectForKey:theFile.uuid];
     }
-    
+
     if (theFile.store) {
         theFile.store = nil;
     }
@@ -1070,7 +1066,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
     @synchronized(self) {
         [_cachedUserFiles removeObjectForKey:theFile.uuid];
     }
-    
+
     if (theFile.store) {
         theFile.store = nil;
     }
