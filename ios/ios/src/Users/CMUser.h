@@ -11,6 +11,8 @@
 #import "CMSerializable.h"
 #import "CMUserAccountResult.h"
 
+@class CMUser;
+
 /**
  * The block callback for all user account and session operations that take place on an instance of <tt>CMUser</tt>.
  * The block returns <tt>void</tt> and takes a <tt>CMUserAccountResult</tt> code representing the reuslt of the operation,
@@ -19,7 +21,7 @@
  * Use the convenience functions <tt>CMUserAccountOperationSuccessful</tt> and <tt>CMUserAccountOperationFailed</tt>
  * to help you see if <tt>resultCode</tt> represents success or failure.
  */
-typedef void (^CMUserOperationCallback)(CMUserAccountResult resultCode, NSArray *messages);
+typedef void (^CMUserOperationCallback)(CMUser *user, CMUserAccountResult resultCode, NSArray *messages);
 
 /**
  * The block callback for any user account operation that involves fetching one or more user profiles. The block returns <tt>void</tt>
@@ -62,6 +64,12 @@ typedef void (^CMUserFetchCallback)(NSArray *users, NSDictionary *errors);
 @property (atomic, strong) NSDate *tokenExpiration;
 
 /**
+ * An array of social networks this user has linked to their account. This array contains NSString objects with
+ * all-lowercase names of the networks.
+ */
+@property (atomic, strong) NSArray *linkedSocialNetworks;
+
+/**
  * <tt>YES</tt> when the user's account and profile have been created server-side. If <tt>NO</tt>, it means the user exists only locally in your app.
  */
 @property (readonly) BOOL isCreatedRemotely;
@@ -79,6 +87,11 @@ typedef void (^CMUserFetchCallback)(NSArray *users, NSDictionary *errors);
  * @see CMUser#tokenExpiration
  */
 @property (readonly) BOOL isLoggedIn;
+
+/**
+ * 
+ */
++ (id)newUserWithUserId:(NSString *)userId password:(NSString *)password callback:(CMUserOperationCallback)callback;
 
 /**
  * Initialize the user with an email address and password.

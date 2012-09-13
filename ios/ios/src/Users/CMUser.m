@@ -33,6 +33,7 @@ static CMWebService *webService;
 @synthesize tokenExpiration;
 @synthesize objectId;
 @synthesize isDirty;
+@synthesize linkedSocialNetworks;
 
 + (NSString *)className {
     return NSStringFromClass([self class]);
@@ -50,12 +51,19 @@ static CMWebService *webService;
     }
 }
 
++ (id)newUserWithUserId:(NSString *)userId password:(NSString *)password callback:(CMUserOperationCallback)callback {
+    CMUser *newUser = [[self alloc] initWithUserId:userId andPassword:password];
+    [newUser createAccountAndLoginWithCallback:callback];
+    return newUser;
+}
+
 - (id)init
 {
     if (self = [super init]) {
         self.token = nil;
         self.userId = nil;
         self.password = nil;
+        self.linkedSocialNetworks = [NSArray array];
         objectId = @"";
         if (!webService) {
             webService = [[CMWebService alloc] init];
@@ -71,6 +79,7 @@ static CMWebService *webService;
         self.token = nil;
         self.userId = theUserId;
         self.password = thePassword;
+        self.linkedSocialNetworks = [NSArray array];
         objectId = @"";
         if (!webService) {
             webService = [[CMWebService alloc] init];
@@ -91,6 +100,10 @@ static CMWebService *webService;
         }
         token = [coder decodeObjectForKey:@"token"];
         tokenExpiration = [coder decodeObjectForKey:@"tokenExpiration"];
+        linkedSocialNetworks = [coder decodeObjectForKey:@"linkedSocialNetworks"];
+        if (!linkedSocialNetworks) {
+            linkedSocialNetworks = [NSArray array];
+        }
         if (!webService) {
             webService = [[CMWebService alloc] init];
         }
@@ -148,6 +161,7 @@ static CMWebService *webService;
     [coder encodeObject:self.objectId forKey:CMInternalObjectIdKey];
     [coder encodeObject:self.token forKey:@"token"];
     [coder encodeObject:self.tokenExpiration forKey:@"tokenExpiration"];
+    [coder encodeObject:self.linkedSocialNetworks forKey:@"linkedSocialNetworks"];
 }
 
 #pragma mark - Comparison
@@ -205,7 +219,7 @@ static CMWebService *webService;
     [webService saveUser:self callback:^(CMUserAccountResult result, NSDictionary *responseBody) {
         [self copyValuesFromDictionaryIntoState:responseBody];
         if (callback) {
-            callback(result, [NSDictionary dictionary]);
+            callback(self, result, [NSDictionary dictionary]);
         }
     }];
 }
@@ -232,7 +246,7 @@ static CMWebService *webService;
         }
 
         if (callback) {
-            callback(result, messages);
+            callback(self, result, messages);
         }
     }];
 }
@@ -248,7 +262,7 @@ static CMWebService *webService;
         }
 
         if (callback) {
-            callback(result, messages);
+            callback(self, result, messages);
         }
     }];
 }
@@ -265,18 +279,18 @@ static CMWebService *webService;
         }
 
         if (callback) {
-            callback(result, messages);
+            callback(self, result, messages);
         }
     }];
 }
 
 - (void)createAccountAndLoginWithCallback:(CMUserOperationCallback)callback {
-    [self createAccountWithCallback:^(CMUserAccountResult resultCode, NSArray *messages) {
+    [self createAccountWithCallback:^(CMUser *user, CMUserAccountResult resultCode, NSArray *messages) {
         if (resultCode == CMUserAccountCreateFailedDuplicateAccount || resultCode == CMUserAccountCreateSucceeded) {
             [self loginWithCallback:callback];
         } else {
             if (callback) {
-                callback(resultCode, messages);
+                callback(self, resultCode, messages);
             }
         }
     }];
@@ -292,11 +306,11 @@ static CMWebService *webService;
 
                                       // Since the password change succeeded, the user needs to be logged back
                                       // in again to get a new session token since the old one has been expired.
-                                      [self loginWithCallback:^(CMUserAccountResult resultCode, NSArray *messages) {
-                                          callback(CMUserAccountPasswordChangeSucceeded, [NSArray array]);
+                                      [self loginWithCallback:^(CMUser *user, CMUserAccountResult resultCode, NSArray *messages) {
+                                          callback(self, CMUserAccountPasswordChangeSucceeded, [NSArray array]);
                                       }];
                                   } else  {
-                                      callback(result, [NSArray array]);
+                                      callback(self, result, [NSArray array]);
                                   }
                               }
      ];
@@ -305,7 +319,7 @@ static CMWebService *webService;
 - (void)resetForgottenPasswordWithCallback:(CMUserOperationCallback)callback {
     [webService resetForgottenPasswordForUser:self callback:^(CMUserAccountResult result, NSDictionary *responseBody) {
         if (callback) {
-            callback(result, [NSArray array]);
+            callback(self, result, [NSArray array]);
         }
     }];
 }

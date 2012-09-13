@@ -1078,7 +1078,7 @@ NSString * const CMStoreObjectDeletedNotification = @"CMStoreObjectDeletedNotifi
 - (void)_ensureUserLoggedInWithCallback:(void (^)(void))callback {
     NSAssert(user != nil, @"CloudMine *** Attemping to log user in when user is not set on store. This is from an internal function and should never happen unless you are doing bad things!");
     if (!user.isLoggedIn) {
-        [user loginWithCallback:^(CMUserAccountResult resultCode, NSArray *messages) {
+        [user loginWithCallback:^(CMUser *user, CMUserAccountResult resultCode, NSArray *messages) {
             if (CMUserAccountOperationFailed(resultCode)) {
                 NSLog(@"CloudMine *** Failed to login user during store operation");
                 lastError = $makeErr(@"CloudMineUserLoginErrorDomain", 0, $dict(@"user", user, @"resultCode", $num(resultCode)));

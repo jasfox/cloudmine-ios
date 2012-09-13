@@ -513,7 +513,7 @@ NSString * const YAJLErrorKey = @"YAJLErrorKey";
             }
 
             // User must be logged in for this to work, so try logging them in.
-            [user loginWithCallback:^(CMUserAccountResult resultCode, NSArray *messages) {
+            [user loginWithCallback:^(CMUser *user, CMUserAccountResult resultCode, NSArray *messages) {
                 if (CMUserAccountOperationFailed(resultCode)) {
                     // If login failed, pass the error through.
                     callback(resultCode, [NSDictionary dictionary]);
