@@ -81,6 +81,8 @@ static CMWebService *webService;
     return self;
 }
 
+// NOTE: This is not called when de-serializing a user from a CloudMine call. This is used
+// when deserializing a cached CMUser from the filesystem.
 - (id)initWithCoder:(NSCoder *)coder {
     if (self = [super init]) {
         objectId = [coder decodeObjectForKey:CMInternalObjectIdKey];
