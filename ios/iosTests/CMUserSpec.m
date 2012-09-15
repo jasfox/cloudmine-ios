@@ -54,26 +54,26 @@ describe(@"CMUser", ^{
     });
 
     context(@"given a clean instance of a CMUser subclass", ^{
-        __block CustomUser *user = nil;
+        __block CustomUser *customUser = nil;
         __block KWMock *mockWebService = nil;
 
         beforeEach(^{
-            user = [[CustomUser alloc] initWithUserId:@"marc@cloudmine.me" andPassword:@"pass"];
+            customUser = [[CustomUser alloc] initWithUserId:@"marc@cloudmine.me" andPassword:@"pass"];
             mockWebService = [CMWebService nullMock];
-            [user setValue:mockWebService forKey:@"webService"];
+            [customUser setValue:mockWebService forKey:@"webService"];
 
             // Setting these two values should not make the object dirty because it hasn't been persisted remotely yet.
-            user.name = @"Marc";
-            user.age = 24;
+            customUser.name = @"Marc";
+            customUser.age = 24;
         });
 
         it(@"should not be dirty", ^{
-            [[theValue(user.isDirty) should] beNo];
+            [[theValue(customUser.isDirty) should] beNo];
         });
         
         context(@"when accessing other users of the app", ^{
             beforeEach(^{
-                [user setValue:@"abc123" forKey:@"objectId"];
+                [customUser setValue:@"abc123" forKey:@"objectId"];
             });
             
             it(@"should cache the user returned when searching by a specific identifier", ^{
@@ -84,18 +84,18 @@ describe(@"CMUser", ^{
                 [[CMUser should] receive:@selector(cacheMultipleUsers:) withCount:1];
                 
                 // This first call should trigger the web service call.
-                [CMUser userWithIdentifier:user.objectId callback:^(NSArray *users, NSDictionary *errors) {
-                    [[[[users lastObject] objectId] should] equal:user.objectId];
+                [CMUser userWithIdentifier:customUser.objectId callback:^(NSArray *users, NSDictionary *errors) {
+                    [[[[users lastObject] objectId] should] equal:customUser.objectId];
                 }];
                 
                 CMWebServiceUserFetchSuccessCallback callback = callbackBlockSpy.argument;
-                NSDictionary *userState = [CMObjectEncoder encodeObjects:$set(user)];
+                NSDictionary *userState = [CMObjectEncoder encodeObjects:$set(customUser)];
                 callback(userState, [NSDictionary dictionary], $num(1));
                 
                 // Now let's do the same thing again, but this time it should read from the cache.
-                [[CMUser should] receive:@selector(userFromCacheWithIdentifier:) withArguments:user.objectId];
-                [CMUser userWithIdentifier:user.objectId callback:^(NSArray *users, NSDictionary *errors) {
-                    [[[[users lastObject] objectId] should] equal:user.objectId];
+                [[CMUser should] receive:@selector(userFromCacheWithIdentifier:) withArguments:customUser.objectId];
+                [CMUser userWithIdentifier:customUser.objectId callback:^(NSArray *users, NSDictionary *errors) {
+                    [[[[users lastObject] objectId] should] equal:customUser.objectId];
                 }];
             });
         });
@@ -105,37 +105,37 @@ describe(@"CMUser", ^{
                 KWCaptureSpy *callbackBlockSpy = [mockWebService captureArgument:@selector(saveUser:callback:) atIndex:1];
                 [[mockWebService should] receive:@selector(saveUser:callback:)];
                 
-                [user save:^(CMUserAccountResult resultCode, NSArray *messages) {
-                    [user setValue:@"1234" forKey:@"objectId"]; // need to do this so it thinks it has actually been saved remotely
+                [customUser save:^(CMUser *user, CMUserAccountResult resultCode, NSArray *messages) {
+                    [customUser setValue:@"1234" forKey:@"objectId"]; // need to do this so it thinks it has actually been saved remotely
                 }];
                 
                 CMWebServiceUserAccountOperationCallback callback = callbackBlockSpy.argument;
-                NSDictionary *userState = [[CMObjectEncoder encodeObjects:$set(user)] objectForKey:user.objectId];
+                NSDictionary *userState = [[CMObjectEncoder encodeObjects:$set(customUser)] objectForKey:customUser.objectId];
                 callback(CMUserAccountProfileUpdateSucceeded, userState);
                 
                 // Object has just been saved, so it should not be dirty.
-                [[theValue(user.isDirty) should] beNo];
+                [[theValue(customUser.isDirty) should] beNo];
                 
                 // Make a change to the object.
-                user.name = @"Derek";
+                customUser.name = @"Derek";
                 
                 // It should be dirty.
-                [[theValue(user.isDirty) should] beYes];
+                [[theValue(customUser.isDirty) should] beYes];
             });
             
             it(@"should use server state locally after login if there were no local changes made before login", ^{
                 // Make the user appear to exist server side.
-                [user setValue:@"1234" forKey:@"objectId"];
+                [customUser setValue:@"1234" forKey:@"objectId"];
                 
                 // Verify that the user is still not dirty.
-                [[theValue(user.isDirty) should] beNo];
+                [[theValue(customUser.isDirty) should] beNo];
                 
                 // Set up the capture spy to intercept the callback block.
                 KWCaptureSpy *callbackBlockSpy = [mockWebService captureArgument:@selector(loginUser:callback:) atIndex:1];
                 [[mockWebService should] receive:@selector(loginUser:callback:)];
                 
                 // Run the test method.
-                [user loginWithCallback:nil];
+                [customUser loginWithCallback:nil];
                 
                 // Make a mock response from the web server with changes we haven't seen yet.
                 NSMutableDictionary *userState = $mdict(@"session_token", @"5555", @"expires", @"Mon 01 Jun 2020 01:00:00 GMT", @"profile", $dict(@"name", @"Philip", @"age", $num(30)));
@@ -144,26 +144,26 @@ describe(@"CMUser", ^{
                 callback(CMUserAccountLoginSucceeded, userState);
                 
                 // Validate that the values from the server were applied to the user.
-                [[user.name should] equal:@"Philip"];
-                [[theValue(user.age) should] equal:theValue(30)];
-                [[user.token should] equal:@"5555"];
+                [[customUser.name should] equal:@"Philip"];
+                [[theValue(customUser.age) should] equal:theValue(30)];
+                [[customUser.token should] equal:@"5555"];
             });
             
             it(@"should ignore server state locally after login if there were local changes made before login", ^{
                 // Make the user appear to exist server side.
-                [user setValue:@"1234" forKey:@"objectId"];
-                user.name = @"Conrad";
-                user.age = 15;
+                [customUser setValue:@"1234" forKey:@"objectId"];
+                customUser.name = @"Conrad";
+                customUser.age = 15;
                 
                 // Verify that the user is now dirty.
-                [[theValue(user.isDirty) should] beYes];
+                [[theValue(customUser.isDirty) should] beYes];
                 
                 // Set up the capture spy to intercept the callback block.
                 KWCaptureSpy *callbackBlockSpy = [mockWebService captureArgument:@selector(loginUser:callback:) atIndex:1];
                 [[mockWebService should] receive:@selector(loginUser:callback:)];
                 
                 // Run the test method.
-                [user loginWithCallback:nil];
+                [customUser loginWithCallback:nil];
                 
                 // Make a mock response from the web server with changes we haven't seen yet.
                 NSMutableDictionary *userState = $mdict(@"session_token", @"5555", @"expires", @"Mon 01 Jun 2020 01:00:00 GMT", @"profile", $dict(@"name", @"Philip", @"age", $num(30)));
@@ -172,9 +172,9 @@ describe(@"CMUser", ^{
                 callback(CMUserAccountLoginSucceeded, userState);
                 
                 // Validate that the values from the server were not applied.
-                [[user.name should] equal:@"Conrad"];
-                [[theValue(user.age) should] equal:theValue(15)];
-                [[user.token should] equal:@"5555"];
+                [[customUser.name should] equal:@"Conrad"];
+                [[theValue(customUser.age) should] equal:theValue(15)];
+                [[customUser.token should] equal:@"5555"];
             });
         });
     });
