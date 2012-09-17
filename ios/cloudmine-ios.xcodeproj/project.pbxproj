@@ -95,6 +95,7 @@
 		7A87A3351563FF2700D788E2 /* CMSortDescriptor.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7AE284891562C3C8003E8A8F /* CMSortDescriptor.h */; };
 		7A91E8D914E6EF85008B7941 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A91E8D814E6EF85008B7941 /* CoreLocation.framework */; };
 		7A934E78150E8CC200A2CAD6 /* CMObjectSerialization.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 7A7EDBD9148EBE3800AB5B69 /* CMObjectSerialization.h */; };
+		7A9DC8C116052F6100ADE9A5 /* CMSocialLoginView.m in Sources */ = {isa = PBXBuildFile; fileRef = 7A9DC8C016052F6100ADE9A5 /* CMSocialLoginView.m */; };
 		7AA79D6314DC1FB900F3CA3B /* CMCrossPlatformGenericSerializableObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AA79D6214DC1FB900F3CA3B /* CMCrossPlatformGenericSerializableObject.m */; };
 		7AA79D7A14DC23C700F3CA3B /* MARTNSObject.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AA79D6D14DC23C700F3CA3B /* MARTNSObject.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		7AA79D7C14DC23C700F3CA3B /* RTIvar.m in Sources */ = {isa = PBXBuildFile; fileRef = 7AA79D6F14DC23C700F3CA3B /* RTIvar.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
@@ -271,6 +272,8 @@
 		7A87316414BB309F000D6DEA /* NSMutableData+RandomData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableData+RandomData.h"; sourceTree = "<group>"; };
 		7A87316514BB309F000D6DEA /* NSMutableData+RandomData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableData+RandomData.m"; sourceTree = "<group>"; };
 		7A91E8D814E6EF85008B7941 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		7A9DC8BF16052F6100ADE9A5 /* CMSocialLoginView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMSocialLoginView.h; sourceTree = "<group>"; };
+		7A9DC8C016052F6100ADE9A5 /* CMSocialLoginView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CMSocialLoginView.m; sourceTree = "<group>"; };
 		7AA79D6114DC1FB900F3CA3B /* CMCrossPlatformGenericSerializableObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = CMCrossPlatformGenericSerializableObject.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		7AA79D6214DC1FB900F3CA3B /* CMCrossPlatformGenericSerializableObject.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = CMCrossPlatformGenericSerializableObject.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		7AA79D6A14DC23C700F3CA3B /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
@@ -696,6 +699,8 @@
 				7AF00B9B15A8DC650070442A /* ACLs */,
 				7AF00B9E15A8DC650070442A /* CMUser.h */,
 				7AF00B9F15A8DC650070442A /* CMUser.m */,
+				7A9DC8BF16052F6100ADE9A5 /* CMSocialLoginView.h */,
+				7A9DC8C016052F6100ADE9A5 /* CMSocialLoginView.m */,
 			);
 			name = Users;
 			path = ios/src/Users;
@@ -945,6 +950,7 @@
 				D088F5B515E3FDF1005062BD /* AFNetworkActivityIndicatorManager.m in Sources */,
 				D088F5B715E3FDF1005062BD /* AFURLConnectionOperation.m in Sources */,
 				D0F4E4F615E418F800055638 /* AFJSONUtilities.m in Sources */,
+				7A9DC8C116052F6100ADE9A5 /* CMSocialLoginView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
