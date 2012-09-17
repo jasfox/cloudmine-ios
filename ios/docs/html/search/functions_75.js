@@ -6,5 +6,6 @@ var searchData=
   ['uploadfileatpath_3aserversidefunction_3anamed_3aofmimetype_3auser_3aextraparameters_3asuccesshandler_3aerrorhandler_3a',['uploadFileAtPath:serverSideFunction:named:ofMimeType:user:extraParameters:successHandler:errorHandler:',['../interface_c_m_web_service.html#a9744cf8bb35b49f68608f6269a810a1a',1,'CMWebService']]],
   ['userfilewithname_3aadditionaloptions_3acallback_3a',['userFileWithName:additionalOptions:callback:',['../interface_c_m_store.html#abf65f27fcfb813a67f650c84fa518c45',1,'CMStore']]],
   ['userobjectswithkeys_3aadditionaloptions_3acallback_3a',['userObjectsWithKeys:additionalOptions:callback:',['../interface_c_m_store.html#af6bbaa617ad3893bcc76a146d3c9416d',1,'CMStore']]],
-  ['userwithidentifier_3acallback_3a',['userWithIdentifier:callback:',['../interface_c_m_user.html#ae43fccb2db39b33eaf97dae80bf73c96',1,'CMUser']]]
+  ['userwithidentifier_3acallback_3a',['userWithIdentifier:callback:',['../interface_c_m_user.html#ae43fccb2db39b33eaf97dae80bf73c96',1,'CMUser']]],
+  ['userwithsocialnetwork_3acallback_3a',['userWithSocialNetwork:callback:',['../interface_c_m_user.html#a5c3482eed61296c5b12ba63a846c7ade',1,'CMUser']]]
 ];

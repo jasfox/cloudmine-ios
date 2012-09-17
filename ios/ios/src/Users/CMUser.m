@@ -26,7 +26,7 @@ NSString * const CMSocialNetworkGithub = @"github";
 NSString * const CMSocialNetworkLinkedin = @"linkedin";
 NSString * const CMSocialNetworkMeetup = @"meetup";
 NSString * const CMSocialNetworkRunkeeper = @"runkeeper";
-NSString * const CMSocialNetworkWhitings = @"whitings";
+NSString * const CMSocialNetworkWhithings = @"whithings";
 NSString * const CMSocialNetworkWordpress = @"wordpress";
 NSString * const CMSocialNetworkYammer = @"yammer";
 

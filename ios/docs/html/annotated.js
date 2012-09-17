@@ -23,6 +23,7 @@ var annotated =
     [ "<CMSerializable>", "protocol_c_m_serializable-p.html", "protocol_c_m_serializable-p" ],
     [ "CMServerFunction", "interface_c_m_server_function.html", "interface_c_m_server_function" ],
     [ "CMSnippetResult", "interface_c_m_snippet_result.html", "interface_c_m_snippet_result" ],
+    [ "CMSocialLoginView", "interface_c_m_social_login_view.html", "interface_c_m_social_login_view" ],
     [ "CMSortDescriptor", "interface_c_m_sort_descriptor.html", "interface_c_m_sort_descriptor" ],
     [ "CMStore", "interface_c_m_store.html", "interface_c_m_store" ],
     [ "CMStoreOptions", "interface_c_m_store_options.html", "interface_c_m_store_options" ],

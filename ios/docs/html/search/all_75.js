@@ -11,5 +11,6 @@ var searchData=
   ['userid',['userId',['../interface_c_m_user.html#aae1ccbb80ad2e0627ea3c0154fe8b822',1,'CMUser']]],
   ['userobjectswithkeys_3aadditionaloptions_3acallback_3a',['userObjectsWithKeys:additionalOptions:callback:',['../interface_c_m_store.html#af6bbaa617ad3893bcc76a146d3c9416d',1,'CMStore']]],
   ['userwithidentifier_3acallback_3a',['userWithIdentifier:callback:',['../interface_c_m_user.html#ae43fccb2db39b33eaf97dae80bf73c96',1,'CMUser']]],
+  ['userwithsocialnetwork_3acallback_3a',['userWithSocialNetwork:callback:',['../interface_c_m_user.html#a5c3482eed61296c5b12ba63a846c7ade',1,'CMUser']]],
   ['uuid',['uuid',['../interface_c_m_file.html#a95a0607f23dad6f50078152ed57561a6',1,'CMFile']]]
 ];

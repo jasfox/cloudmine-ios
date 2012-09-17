@@ -13,19 +13,46 @@
 
 @class CMUser;
 
+/** Social network identifier for Facebook */
 extern NSString * const CMSocialNetworkFacebook;
+
+/** Social network identifier for Twitter */
 extern NSString * const CMSocialNetworkTwitter;
+
+/** Social network identifier for Foursquare */
 extern NSString * const CMSocialNetworkFoursquare;
+
+/** Social network identifier for Instagream */
 extern NSString * const CMSocialNetworkInstagram;
+
+/** Social network identifier for Tumblr */
 extern NSString * const CMSocialNetworkTumblr;
+
+/** Social network identifier for Dropbox */
 extern NSString * const CMSocialNetworkDropbox;
+
+/** Social network identifier for Fitbit */
 extern NSString * const CMSocialNetworkFitbit;
+
+/** Social network identifier for GitHub */
 extern NSString * const CMSocialNetworkGithub;
+
+/** Social network identifier for LinkedIn */
 extern NSString * const CMSocialNetworkLinkedin;
+
+/** Social network identifier for Meetup.com */
 extern NSString * const CMSocialNetworkMeetup;
+
+/** Social network identifier for Runkeeper */
 extern NSString * const CMSocialNetworkRunkeeper;
-extern NSString * const CMSocialNetworkWhitings;
+
+/** Social network identifier for Whithings */
+extern NSString * const CMSocialNetworkWhithings;
+
+/** Social network identifier for Wordpress.com */
 extern NSString * const CMSocialNetworkWordpress;
+
+/** Social network identifier for Yammer */
 extern NSString * const CMSocialNetworkYammer;
 
 /**
@@ -109,9 +136,10 @@ typedef void (^CMUserFetchCallback)(NSArray *users, NSDictionary *errors);
  * Using this will cause a <tt>UIWebView</tt> to appear with the supplied network's authentication page. This SDK will handle
  * all interactions with this view. The login flow is managed by an instance of <tt>CMSocialLoginView</tt>.
  *
- * @param networkName The name of the social network.
+ * @param networkName The name of the social network. There are a set of constants with a number of pre-defined social networks. See CMUser.h for the comprehensive list of these. They follow this pattern: <tt>CMSocialNetworkName</tt>.
  *
  * @see CMSocialLoginView
+ * @see CMUser.h
  */
 + (id)userWithSocialNetwork:(NSString *)networkName callback:(CMUserOperationCallback)callback;
 

@@ -7,7 +7,7 @@ var searchData=
   ['cmstoreobjectfetchcallback',['CMStoreObjectFetchCallback',['../_c_m_store_callbacks_8h.html#a99adae1f2e2515289d2fb15029f3f08e',1,'CMStoreCallbacks.h']]],
   ['cmstoreobjectuploadcallback',['CMStoreObjectUploadCallback',['../_c_m_store_callbacks_8h.html#a31bd90b82d404aa9586fc609fa21dd41',1,'CMStoreCallbacks.h']]],
   ['cmuserfetchcallback',['CMUserFetchCallback',['../_c_m_user_8h.html#abd3eece586565d4c1866f7a885b269e0',1,'CMUser.h']]],
-  ['cmuseroperationcallback',['CMUserOperationCallback',['../_c_m_user_8h.html#a103162e6c8dfb13dea703dc3d31664a8',1,'CMUser.h']]],
+  ['cmuseroperationcallback',['CMUserOperationCallback',['../_c_m_user_8h.html#a012ff0e2bba3792cc41396ff1b8ad4be',1,'CMUser.h']]],
   ['cmwebservicefetchfailurecallback',['CMWebServiceFetchFailureCallback',['../_c_m_web_service_8h.html#a57f23dfaa54b80c1798acee35e45f386',1,'CMWebService.h']]],
   ['cmwebservicefilefetchsuccesscallback',['CMWebServiceFileFetchSuccessCallback',['../_c_m_web_service_8h.html#ae8267288b3502db7c66608bd3a43cc6a',1,'CMWebService.h']]],
   ['cmwebservicefileuploadsuccesscallback',['CMWebServiceFileUploadSuccessCallback',['../_c_m_web_service_8h.html#a5609890cd4b9e8590aaf19c69bf4dc3a',1,'CMWebService.h']]],
