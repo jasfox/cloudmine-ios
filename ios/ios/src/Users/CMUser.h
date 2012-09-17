@@ -13,6 +13,21 @@
 
 @class CMUser;
 
+extern NSString * const CMSocialNetworkFacebook;
+extern NSString * const CMSocialNetworkTwitter;
+extern NSString * const CMSocialNetworkFoursquare;
+extern NSString * const CMSocialNetworkInstagram;
+extern NSString * const CMSocialNetworkTumblr;
+extern NSString * const CMSocialNetworkDropbox;
+extern NSString * const CMSocialNetworkFitbit;
+extern NSString * const CMSocialNetworkGithub;
+extern NSString * const CMSocialNetworkLinkedin;
+extern NSString * const CMSocialNetworkMeetup;
+extern NSString * const CMSocialNetworkRunkeeper;
+extern NSString * const CMSocialNetworkWhitings;
+extern NSString * const CMSocialNetworkWordpress;
+extern NSString * const CMSocialNetworkYammer;
+
 /**
  * The block callback for all user account and session operations that take place on an instance of <tt>CMUser</tt>.
  * The block returns <tt>void</tt> and takes a <tt>CMUserAccountResult</tt> code representing the reuslt of the operation,
@@ -89,9 +104,16 @@ typedef void (^CMUserFetchCallback)(NSArray *users, NSDictionary *errors);
 @property (readonly) BOOL isLoggedIn;
 
 /**
- * 
+ * Convenience construtor to create a new CMUser instance based on linkage with a supported social network.
+ *
+ * Using this will cause a <tt>UIWebView</tt> to appear with the supplied network's authentication page. This SDK will handle
+ * all interactions with this view. The login flow is managed by an instance of <tt>CMSocialLoginView</tt>.
+ *
+ * @param networkName The name of the social network.
+ *
+ * @see CMSocialLoginView
  */
-+ (id)newUserWithUserId:(NSString *)userId password:(NSString *)password callback:(CMUserOperationCallback)callback;
++ (id)userWithSocialNetwork:(NSString *)networkName callback:(CMUserOperationCallback)callback;
 
 /**
  * Initialize the user with an email address and password.

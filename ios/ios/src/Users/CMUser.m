@@ -15,6 +15,21 @@
 #import "MARTNSObject.h"
 #import "RTProperty.h"
 
+NSString * const CMSocialNetworkFacebook = @"facebook";
+NSString * const CMSocialNetworkTwitter = @"twitter";
+NSString * const CMSocialNetworkFoursquare = @"foursquare";
+NSString * const CMSocialNetworkInstagram = @"instagram";
+NSString * const CMSocialNetworkTumblr = @"tumblr";
+NSString * const CMSocialNetworkDropbox = @"dropbox";
+NSString * const CMSocialNetworkFitbit = @"fitbit";
+NSString * const CMSocialNetworkGithub = @"github";
+NSString * const CMSocialNetworkLinkedin = @"linkedin";
+NSString * const CMSocialNetworkMeetup = @"meetup";
+NSString * const CMSocialNetworkRunkeeper = @"runkeeper";
+NSString * const CMSocialNetworkWhitings = @"whitings";
+NSString * const CMSocialNetworkWordpress = @"wordpress";
+NSString * const CMSocialNetworkYammer = @"yammer";
+
 @interface CMUser ()
 + (NSURL *)cacheLocation;
 + (NSMutableDictionary *)cachedUsers;
@@ -51,10 +66,8 @@ static CMWebService *webService;
     }
 }
 
-+ (id)newUserWithUserId:(NSString *)userId password:(NSString *)password callback:(CMUserOperationCallback)callback {
-    CMUser *newUser = [[self alloc] initWithUserId:userId andPassword:password];
-    [newUser createAccountAndLoginWithCallback:callback];
-    return newUser;
++ (id)userWithSocialNetwork:(NSString *)networkName callback:(CMUserOperationCallback)callback {
+    return nil;
 }
 
 - (id)init
