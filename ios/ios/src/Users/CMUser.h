@@ -56,24 +56,6 @@ extern NSString * const CMSocialNetworkWordpress;
 extern NSString * const CMSocialNetworkYammer;
 
 /**
- * The block callback for all user account and session operations that take place on an instance of <tt>CMUser</tt>.
- * The block returns <tt>void</tt> and takes a <tt>CMUserAccountResult</tt> code representing the reuslt of the operation,
- * as well as an array of messages the server sent back. These messages will more often than not be errors.
- *
- * Use the convenience functions <tt>CMUserAccountOperationSuccessful</tt> and <tt>CMUserAccountOperationFailed</tt>
- * to help you see if <tt>resultCode</tt> represents success or failure.
- */
-typedef void (^CMUserOperationCallback)(CMUser *user, CMUserAccountResult resultCode, NSArray *messages);
-
-/**
- * The block callback for any user account operation that involves fetching one or more user profiles. The block returns <tt>void</tt>
- * and takes an <tt>NSArray</tt> containing all the deserialized <tt>CMUser</tt> (or subclass) instances as well as a dictionary of error messages
- * the server sent back. The second parameter will always be an empty dictionary except when using CMUser#userWithIdentifier:callback:, in which case
- * that will be the place where the "not found" error is recorded.
- */
-typedef void (^CMUserFetchCallback)(NSArray *users, NSDictionary *errors);
-
-/**
  * Representation of an end-user in CloudMine. This class manages session state (i.e. tokens and all that).
  *
  * <strong>Subclassing Notes</strong>

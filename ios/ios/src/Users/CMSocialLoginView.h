@@ -7,13 +7,16 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "CMUserAccountResult.h"
 
 @class CMUser;
 
 @interface CMSocialLoginView : NSObject <UIWebViewDelegate>
 
-@property (nonatomic, strong) UIWebView *webView;
+@property (nonatomic, readonly) UIWebView *webView;
+@property (nonatomic, strong) CMUser *user;
 
-- (void)beginLoginForUser:(CMUser *)user onNetwork:(NSString *)networkName;
+- (id)initWithUser:(CMUser *)user;
+- (void)beginLoginForNetwork:(NSString *)networkName callback:(CMUserOperationCallback)callback;
 
 @end

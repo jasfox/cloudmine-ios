@@ -11,6 +11,7 @@
 #import "CMObjectSerialization.h"
 #import "CMObjectDecoder.h"
 #import "CMObjectEncoder.h"
+#import "CMSocialLoginView.h"
 
 #import "MARTNSObject.h"
 #import "RTProperty.h"

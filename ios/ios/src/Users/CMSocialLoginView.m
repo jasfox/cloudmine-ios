@@ -10,19 +10,22 @@
 
 @implementation CMSocialLoginView
 @synthesize webView = _webView;
+@synthesize user = _user;
 
-- (id)init
-{
+- (id)initWithUser:(CMUser *)user {
     if (self = [super init]) {
         _webView = [[UIWebView alloc] init];
         _webView.delegate = self;
+        _user = user;
     }
     return self;
 }
 
 #pragma mark - Workflow kickoff
 
-
+- (void)beginLoginForNetwork:(NSString *)networkName callback:(CMUserOperationCallback)callback {
+    
+}
 
 #pragma mark - UIWebView Delegate Methods
 
