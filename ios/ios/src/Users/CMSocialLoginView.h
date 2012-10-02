@@ -11,9 +11,8 @@
 
 @class CMUser;
 
-@interface CMSocialLoginView : NSObject <UIWebViewDelegate>
+@interface CMSocialLoginView : UIViewController <UIWebViewDelegate>
 
-@property (nonatomic, readonly) UIWebView *webView;
 @property (nonatomic, strong) CMUser *user;
 
 - (id)initWithUser:(CMUser *)user;
